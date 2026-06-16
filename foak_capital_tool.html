@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOAK Capital Tool — TAH Foundation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:#1a1a1a;background:#fff;padding:0 0 40px}
+
+/* ── top bar ── */
+.topbar{background:#004357;padding:14px 24px;display:flex;align-items:center;gap:12px}
+.topbar-title{color:#fff;font-size:15px;font-weight:600}
+.topbar-sub{color:#A8D0D8;font-size:12px}
+.topbar-badge{margin-left:auto;background:#E68C5A;color:#fff;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px}
+
+/* ── progress row ── */
+.progress{display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f9fafb;overflow-x:auto}
+.step-btn{padding:12px 18px;font-size:12px;font-weight:500;color:#6b7280;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:color .15s;font-family:inherit}
+.step-btn:hover{color:#111}
+.step-btn.active{color:#004357;border-bottom:2px solid #004357;font-weight:600}
+.step-num{width:20px;height:20px;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-btn.active .step-num{background:#004357;color:#fff}
+.step-btn.done .step-num{background:#1A6A50;color:#fff}
+
+/* ── panel layout ── */
+.panel{display:none;padding:24px}
+.panel.active{display:block}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+.hero-left .step-label{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.hero-left h2{font-size:20px;font-weight:700;color:#004357;margin-bottom:10px;line-height:1.3}
+.hero-left p{font-size:13px;color:#4b5563;line-height:1.7}
+.hero-right{background:#f0f7f9;border:1px solid #C8D8DC;border-radius:10px;padding:16px}
+.ex-label{font-size:11px;font-weight:600;color:#6b7280;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+.ex-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.ex-item:last-child{margin-bottom:0}
+.ex-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#004357;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.ex-tag.green{background:#1A6A50}
+.ex-tag.amber{background:#9a6200}
+.ex-tag.red{background:#7A1A1A}
+.ex-text{font-size:12px;color:#4b5563;line-height:1.55}
+
+/* ── dashboard card ── */
+.dashboard{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
+.dash-hdr{padding:10px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#4b5563;display:flex;align-items:center;gap:6px}
+.dash-hdr i{font-size:15px;color:#004357}
+
+/* ── archetype cards ── */
+.arch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px}
+@media(max-width:640px){.arch-grid{grid-template-columns:repeat(2,1fr)}}
+.arch-card{border:1.5px solid #e5e7eb;border-radius:8px;padding:12px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.arch-card:hover{border-color:#185568;box-shadow:0 0 0 3px rgba(0,67,87,.08)}
+.arch-card.selected{border-color:#004357;box-shadow:0 0 0 3px rgba(0,67,87,.12);background:#f0f7f9}
+.arch-letter{font-size:22px;font-weight:700;color:#004357;line-height:1}
+.arch-name{font-size:12px;font-weight:600;color:#111;margin:4px 0 3px}
+.arch-meta{font-size:11px;color:#6b7280;line-height:1.4;margin-bottom:5px}
+.arch-eg{font-size:11px;color:#9ca3af;font-style:italic}
+.arch-info{padding:14px 16px;border-top:1px solid #e5e7eb;background:#f0f7f9;font-size:13px;color:#374151;line-height:1.6;display:none}
+.arch-info.visible{display:block}
+.arch-info strong{color:#004357}
+
+/* ── risk grid ── */
+.risk-cols{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #e5e7eb}
+.risk-col{border-right:1px solid #e5e7eb}
+.risk-col:last-child{border-right:none}
+.risk-col-hdr{padding:10px 8px;text-align:center;border-bottom:1px solid #e5e7eb;background:#f9fafb}
+.risk-code{font-size:18px;font-weight:700;color:#004357}
+.risk-name{font-size:10px;color:#6b7280;margin-top:1px}
+.risk-btns{padding:8px;display:flex;flex-direction:column;gap:4px}
+.risk-btn{width:100%;border:1px solid #e5e7eb;border-radius:5px;padding:5px 4px;font-size:11px;font-weight:500;text-align:center;cursor:pointer;background:#fff;color:#4b5563;transition:all .15s;font-family:inherit}
+.risk-btn:hover{background:#f3f4f6}
+.risk-btn.sel-LOW{background:#dcf5e7;border-color:#1A6A50;color:#1A6A50;font-weight:700}
+.risk-btn.sel-MED{background:#fef3c7;border-color:#9a6200;color:#9a6200;font-weight:700}
+.risk-btn.sel-HIGH{background:#fee2d5;border-color:#993C1D;color:#993C1D;font-weight:700}
+.risk-btn.sel-VH{background:#fee2e2;border-color:#7A1A1A;color:#7A1A1A;font-weight:700}
+.risk-result{padding:12px 16px;border-top:1px solid #e5e7eb;font-size:13px;line-height:1.6;display:none}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;margin:2px}
+.badge-LOW{background:#dcf5e7;color:#1A6A50}
+.badge-MED{background:#fef3c7;color:#9a6200}
+.badge-HIGH{background:#fee2d5;color:#993C1D}
+.badge-VH{background:#fee2e2;color:#7A1A1A}
+.gate-warn{margin:0 16px 16px;padding:12px 14px;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;font-size:13px;color:#7A1A1A;line-height:1.6;display:none}
+.gate-warn strong{font-weight:700}
+
+/* ── next button ── */
+.next-btn{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:9px 18px;background:#004357;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.next-btn:hover{background:#185568}
+.next-btn i{font-size:14px}
+
+/* ── derisking table ── */
+.d-table{width:100%;border-collapse:collapse}
+.d-table th{font-size:11px;font-weight:600;color:#6b7280;text-align:left;padding:10px 14px;border-bottom:1px solid #e5e7eb;background:#f9fafb;text-transform:uppercase;letter-spacing:.04em}
+.d-table td{font-size:12px;padding:10px 14px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:top;line-height:1.55}
+.d-table tr:last-child td{border-bottom:none}
+.d-table tr:hover td{background:#f9fafb}
+.blk-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;color:#fff;margin-right:4px}
+
+/* ── stack rows ── */
+.stack-hdr,.stack-row{display:grid;grid-template-columns:180px 1fr 80px 110px;gap:0;border-bottom:1px solid #f3f4f6}
+.stack-hdr{background:#f9fafb;border-bottom:1px solid #e5e7eb}
+.stack-row:last-child{border-bottom:none}
+.stack-row:hover{background:#f9fafb}
+.s-cell{padding:10px 14px;font-size:12px;color:#374151;display:flex;align-items:center;line-height:1.4}
+.s-cell.hd{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:8px}
+.dot-g{background:#1A6A50}
+.dot-a{background:#9a6200}
+.dot-r{background:#7A1A1A}
+.pool-n{font-weight:600;color:#111;font-size:12px}
+.pool-s{font-size:11px;color:#9ca3af;margin-top:1px}
+@media(max-width:640px){.stack-hdr,.stack-row{grid-template-columns:1fr}}
+
+/* ── provider cards ── */
+.prov-card{padding:14px 16px;border-bottom:1px solid #f3f4f6}
+.prov-card:last-child{border-bottom:none}
+.prov-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.prov-name{font-size:13px;font-weight:600;color:#111}
+.prov-type{font-size:11px;color:#6b7280;background:#f3f4f6;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.prov-body{font-size:12px;color:#4b5563;line-height:1.6;margin-bottom:8px}
+.prov-tags{display:flex;flex-wrap:wrap;gap:4px}
+.ptag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;background:#f0f7f9;border:1px solid #C8D8DC;color:#185568}
+
+/* ── footer ── */
+.tool-footer{margin-top:32px;padding:14px 24px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.tool-footer a{color:#185568;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">FOAK Capital Tool</div>
+    <div class="topbar-sub">TAH Foundation · EU ACE LIFE Programme 101104612</div>
+  </div>
+  <div class="topbar-badge">Beta — research prototype</div>
+</div>
+
+<div class="progress" role="tablist">
+  <button class="step-btn active" onclick="goTo(0)" role="tab" aria-selected="true">
+    <span class="step-num">1</span> Your archetype
+  </button>
+  <button class="step-btn" onclick="goTo(1)" role="tab">
+    <span class="step-num">2</span> Risk profile
+  </button>
+  <button class="step-btn" onclick="goTo(2)" role="tab">
+    <span class="step-num">3</span> Derisking sequence
+  </button>
+  <button class="step-btn" onclick="goTo(3)" role="tab">
+    <span class="step-num">4</span> Capital stack
+  </button>
+  <button class="step-btn" onclick="goTo(4)" role="tab">
+    <span class="step-num">5</span> Provider profiles
+  </button>
+</div>
+
+<!-- ══ PANEL 0 — ARCHETYPE ══════════════════════════════════════════ -->
+<div id="p0" class="panel active">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="step-label">Step 1 of 5</div>
+      <h2>What are you building?</h2>
+      <p>Your archetype determines your capex structure, your route to scale, and which financing instruments exist for your category. Two companies in the same climate sector can have completely different capital stack options if their business models differ. Identify yours before anything else.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ex-label">Why it matters — examples</div>
+      <div class="ex-item">
+        <span class="ex-tag">A</span>
+        <span class="ex-text">Cactos sells battery units — scales by replication. Each unit finances separately. NOAK does not need a new FOAK capital raise.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">B</span>
+        <span class="ex-text">Solar Foods Factory 01 — one facility, one output. The whole company depends on one project financing round closing.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">C</span>
+        <span class="ex-text">Vianode sells anode material to many battery makers — manufacturing logic, competitive market pricing, multi-buyer offtake.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">D</span>
+        <span class="ex-text">Stegra — structurally indivisible. Requires a pre-FID coalition of equity partners. Cannot be financed by any single actor alone.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-hdr"><i class="ti ti-building-factory-2" aria-hidden="true"></i> Select your archetype</div>
+    <div class="arch-grid">
+      <div class="arch-card" onclick="selectArch(this,'A')">
+        <div class="arch-letter">A</div>
+        <div class="arch-name">Distributed assets</div>
+        <div class="arch-meta">€0.5–30M per unit · Scale by replication</div>
+        <div class="arch-eg">Cactos, Rondo, Turn2X, Meva</div>
+      </div>
+      <div class="arch-card" onclick="selectArch(this,'B')">
+        <div class="arch-letter">B</div>
+        <div class="arch-name">Process facility</div>
+        <div class="arch-meta">€50–800M · Single facility, homogeneous output</div>
+        <div class="arch-eg">Solar Foods, Brevik CCS, Avantium, Highview</div>
+      </div>
+      <div class="arch-card" onclick="selectArch(this,'C')">
+        <div class="arch-letter">C</div>
+        <div class="arch-name">Manufacturing factory</div>
+        <div class="arch-meta">€20–500M · Products sold into competitive market</div>
+        <div class="arch-eg">Vianode, Cylib, Formo Bio, CustomCells</div>
+      </div>
+      <div class="arch-card" onclick="selectArch(this,'D')">
+        <div class="arch-letter">D</div>
+        <div class="arch-name">Gigafactory / ecosystem</div>
+        <div class="arch-meta">€1B+ · Structurally indivisible, pre-FID coalition</div>
+        <div class="arch-eg">Stegra, H2 Green Steel, Northvolt, Salzgitter</div>
+      </div>
+    </div>
+    <div id="arch-info" class="arch-info"></div>
+  </div>
+  <button class="next-btn" onclick="goTo(1)">Next: rate your risk profile <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<!-- ══ PANEL 1 — RISK PROFILE ════════════════════════════════════════ -->
+<div id="p1" class="panel">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="step-label">Step 2 of 5</div>
+      <h2>What is your inherent risk profile?</h2>
+      <p>Five dimensions determine which capital providers can structurally engage. These are fixed by your technology and market context — you cannot argue your way past them. You can only resolve them through derisking actions. Rate each dimension honestly based on your situation today.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ex-label">What each dimension means</div>
+      <div class="ex-item">
+        <span class="ex-tag">T</span>
+        <span class="ex-text"><strong>Technology novelty</strong> — how novel is the process? VH = new science never operated at commercial scale.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">P</span>
+        <span class="ex-text"><strong>Price vs alternatives</strong> — can output compete on cost without a green premium or subsidy today?</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">F</span>
+        <span class="ex-text"><strong>Feedstock</strong> — is input supply contracted, at stable price, at commercial scale?</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">M</span>
+        <span class="ex-text"><strong>Market demand</strong> — does a contractable buyer pool exist at the required volume and price?</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">I</span>
+        <span class="ex-text"><strong>Infrastructure</strong> — does the project depend on grid, pipeline, or regulatory framework that does not yet exist?</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-hdr"><i class="ti ti-radar" aria-hidden="true"></i> Rate each dimension — click to select</div>
+    <div class="risk-cols" id="risk-grid"></div>
+    <div id="gate-warn" class="gate-warn">
+      <strong>⚠ Pre-FOAK gate violation — do not proceed to capital raising.</strong><br>
+      M=VH and I=VH simultaneously means the market structure must change before any capital stack can be assembled. No instrument exists that can bridge both gaps. Focus on ecosystem orchestration, regulatory advocacy, and demand creation first. Climeworks Mammoth is the canonical case.
+    </div>
+    <div class="risk-result" id="risk-result"></div>
+  </div>
+  <button class="next-btn" onclick="goTo(2)">Next: derisking sequence <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<!-- ══ PANEL 2 — DERISKING SEQUENCE ═════════════════════════════════ -->
+<div id="p2" class="panel">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="step-label">Step 3 of 5</div>
+      <h2>What must you resolve, and in what order?</h2>
+      <p>For each blocking risk dimension there is a specific derisking action and an evidence threshold that capital providers accept as proof it is resolved. The sequence is not optional — approaching a provider before their blocking condition is resolved does not get you "not yet." It closes the door permanently with that provider.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ex-label">Sequence logic — Solar Foods Factory 01</div>
+      <div class="ex-item">
+        <span class="ex-tag green">1st</span>
+        <span class="ex-text">Demo data resolves T=HIGH. Business Finland grant anchors the stack and signals to the next layer.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag amber">2nd</span>
+        <span class="ex-text">IPCEI grant committed — resolves P=HIGH by covering the cost gap to fossil alternatives. Finnish Climate Fund equity follows.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag red">3rd</span>
+        <span class="ex-text">Offtake negotiations advance — resolves M=MED. Enables project financing discussion for Factory 02.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-hdr"><i class="ti ti-list-check" aria-hidden="true"></i> Derisking blocks — what resolves each one</div>
+    <table class="d-table">
+      <thead>
+        <tr>
+          <th style="width:100px">Block</th>
+          <th>What resolves it</th>
+          <th>Evidence threshold (what providers accept)</th>
+          <th>Who validates</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="blk-badge" style="background:#004357">T</span> Technology</td>
+          <td>Demo operating at relevant scale. Risk bucketing complete: BoP proven, core module validated, integration tested at multiplied scale.</td>
+          <td>Independent technical assessor report confirming binary risk is off the table</td>
+          <td>Lenders' technical advisor · ECA technical review panel</td>
+        </tr>
+        <tr>
+          <td><span class="blk-badge" style="background:#0A5A8A">C</span> Commercial</td>
+          <td>Offtake at heads of terms with investment-grade counterparty. Price structure flexible — not fixed before FEED is complete. Non-technical compliance started (ISCC+, REACH, sector certifications).</td>
+          <td>Named buyer, advanced HoT, credible volume commitment, price indexation or collar agreed</td>
+          <td>Project finance bank · DFI investment committee</td>
+        </tr>
+        <tr>
+          <td><span class="blk-badge" style="background:#1A6A50">F</span> Feedstock</td>
+          <td>Long-term supply contract ≥10yr at known price formula. Investment-grade supplier. Feedstock cost locked or capped before FID. Supply chain control strategy confirmed internally.</td>
+          <td>Signed supply agreement or advanced term sheet with price formula and volume commitment</td>
+          <td>Lenders' financial model · ECA due diligence</td>
+        </tr>
+        <tr>
+          <td><span class="blk-badge" style="background:#5A3A8A">I</span> Site / infra</td>
+          <td>Site secured with EPC-ready access rights. Grid connection confirmed. Environmental permit filed or granted. Hard infrastructure dependencies resolved or third party committed. SPV entity established.</td>
+          <td>Land rights documented · grid connection offer accepted · permit status report · SPV formation confirmed</td>
+          <td>ECA · Senior lender due diligence · state aid compliance review</td>
+        </tr>
+        <tr>
+          <td><span class="blk-badge" style="background:#7A4A0A">E</span> Execution</td>
+          <td>FEED complete ±30% capex estimate. EPC model selected. Full project development team in post (30–50 people at FOAK). All workstreams running in parallel with shared definition of FID-ready. CTO–PM split in place since demo stage.</td>
+          <td>FEED report · named EPC or EPCM partner · org chart with named key hires · risk management plan</td>
+          <td>All capital providers assess execution credibility independently — it is never delegated</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="next-btn" onclick="goTo(3)">Next: capital stack <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<!-- ══ PANEL 3 — CAPITAL STACK ═══════════════════════════════════════ -->
+<div id="p3" class="panel">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="step-label">Step 4 of 5</div>
+      <h2>Which capital pools unlock at each derisking gate?</h2>
+      <p>Each resolved risk dimension opens a specific capital pool. That pool's commitment then signals to the next one. The stack assembles in sequence — the cheapest capital enters last. Every month you stay equity-funded is a cost disadvantage on your NOAK. The goal is to reach project finance debt as fast as possible.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ex-label">Three principles on stack sequencing</div>
+      <div class="ex-item">
+        <span class="ex-tag green">lock-in</span>
+        <span class="ex-text">The first committed capital pool sets the terms for everything that follows. Grant-as-anchor (Solar Foods) vs grant-as-enabler (Enifer) produce structurally different stacks.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag amber">signal</span>
+        <span class="ex-text">Each commitment is a signal to the next pool. DFI equity crowds in commercial debt. Offtaker equity crowds in project finance. ECA cover crowds in commercial bank participation.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag red">cost</span>
+        <span class="ex-text">VC equity costs 10–40× more than senior project finance debt. Derisking is the mechanism by which you access cheaper capital. It is not a compliance exercise.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-hdr"><i class="ti ti-layers-intersect" aria-hidden="true"></i> Capital pool access by derisking stage</div>
+    <div class="stack-hdr">
+      <div class="s-cell hd">Capital pool</div>
+      <div class="s-cell hd">Derisking gate required</div>
+      <div class="s-cell hd">Entry stage</div>
+      <div class="s-cell hd">Stack position</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-g"></span><div><div class="pool-n">Catalytic grant</div><div class="pool-s">BEC Catalyst · Innovation Fund · national grants</div></div></div>
+      <div class="s-cell">Demo complete or approaching. T partially resolved. No offtake required. Project readiness checklist met.</div>
+      <div class="s-cell">S2–S3</div>
+      <div class="s-cell">First-loss · non-dilutive</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-g"></span><div><div class="pool-n">DFI / national equity</div><div class="pool-s">Tesi · Norfund · CDP · KfW · BBB · NIB</div></div></div>
+      <div class="s-cell">Demo operating. Contracted demand is the deciding variable — not technology novelty. Co-investor required.</div>
+      <div class="s-cell">S2–S3</div>
+      <div class="s-cell">Junior equity · board seat</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-g"></span><div><div class="pool-n">Strategic / offtaker equity</div><div class="pool-s">Industrial partner · offtaker stake · CVC</div></div></div>
+      <div class="s-cell">Advanced offtake negotiations. C partially resolved. CVC arm ≠ operating business unit — alignment must be explicit.</div>
+      <div class="s-cell">S2–S3</div>
+      <div class="s-cell">Equity or quasi-equity</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-a"></span><div><div class="pool-n">EIB venture debt</div><div class="pool-s">Guaranteed by Innovation Fund</div></div></div>
+      <div class="s-cell">T partially resolved. FEED approaching. Equity cushion in place. Advanced commercial discussions — full offtake not required. Working capital guarantee tranches disburse separately.</div>
+      <div class="s-cell">S3</div>
+      <div class="s-cell">Quasi-equity / sub debt</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-a"></span><div><div class="pool-n">ECA-backed debt</div><div class="pool-s">Finnvera · EKF · Euler Hermes · UKEF · Atradius</div></div></div>
+      <div class="s-cell">All five derisking blocks substantially advanced. T resolved. FEED complete. Offtake at advanced HoT. EPC model selected. Site and permits confirmed.</div>
+      <div class="s-cell">S3</div>
+      <div class="s-cell">Senior guaranteed · 80–95% cover</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-r"></span><div><div class="pool-n">Infrastructure equity</div><div class="pool-s">Infrastructure funds · pension fund equity</div></div></div>
+      <div class="s-cell">FOAK operating at ≥70% nameplate for 6+ months. Technology de-risked by operating data. Bankable template established. Pipeline of NOAK projects visible.</div>
+      <div class="s-cell">S4–S5</div>
+      <div class="s-cell">Equity · long hold</div>
+    </div>
+    <div class="stack-row">
+      <div class="s-cell"><span class="dot dot-r"></span><div><div class="pool-n">Commercial project finance</div><div class="pool-s">Senior secured · project finance banks</div></div></div>
+      <div class="s-cell">All five blocks resolved. Investment-grade offtake executed. FEED complete. All permits granted. ECA or DFI anchoring the stack. Equity cushion ≥20–30%.</div>
+      <div class="s-cell">S3–S4</div>
+      <div class="s-cell">Senior secured · cheapest</div>
+    </div>
+  </div>
+  <button class="next-btn" onclick="goTo(4)">Next: provider profiles <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+</div>
+
+<!-- ══ PANEL 4 — PROVIDER PROFILES ══════════════════════════════════ -->
+<div id="p4" class="panel">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="step-label">Step 5 of 5</div>
+      <h2>What does each provider actually need?</h2>
+      <p>Stated requirements are not revealed requirements. For each provider type there is a specific evidence package, a deal-killer list, and a signal that their commitment sends to the next provider. Knowing the gap between stated and revealed is what changes the outcome of a capital raise.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ex-label">Stated vs revealed — two examples from deal evidence</div>
+      <div class="ex-item">
+        <span class="ex-tag">EIB</span>
+        <span class="ex-text">Says: bankable offtake required. Reveals: advanced HoT with credible industrial buyer is sufficient at venture debt stage. Full take-or-pay not required.</span>
+      </div>
+      <div class="ex-item">
+        <span class="ex-tag">ECA</span>
+        <span class="ex-text">Says: proven technology. Reveals: independent technical assessor report confirming binary risk off the table is the actual gate — not operating hours or TRL number.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="dash-hdr"><i class="ti ti-users" aria-hidden="true"></i> Provider profiles — stated vs revealed requirements</div>
+    <div class="prov-card">
+      <div class="prov-top">
+        <span class="prov-name">Catalytic grant programs (BEC Catalyst · Innovation Fund · national)</span>
+        <span class="prov-type">First-loss grant</span>
+      </div>
+      <div class="prov-body">
+        <strong>Stated:</strong> emission impact, technology readiness, project viability.<br>
+        <strong>Revealed:</strong> project readiness checklist is the real gate — site, EPC relationship, execution credibility, and at least indicative commercial traction. Technology proof alone is not sufficient.<br>
+        <strong>Deal-killers:</strong> no site identified, founding team with no industrial project experience, no co-investor signal, permitting not started.<br>
+        <strong>What their commitment signals:</strong> technology is credible — allows DFI and EIB to engage without repeating the tech assessment.
+      </div>
+      <div class="prov-tags">
+        <span class="ptag">S2–S3</span><span class="ptag">All archetypes</span><span class="ptag">Absorbs T=HIGH</span><span class="ptag">Non-dilutive</span><span class="ptag">9–18 months to commit</span>
+      </div>
+    </div>
+    <div class="prov-card">
+      <div class="prov-top">
+        <span class="prov-name">EIB venture debt (Innovation Fund guaranteed)</span>
+        <span class="prov-type">Quasi-equity / subordinated debt</span>
+      </div>
+      <div class="prov-body">
+        <strong>Stated:</strong> bankable project structure, offtake, experienced management team.<br>
+        <strong>Revealed:</strong> equity cushion in place, T partially resolved via demo data, FEED approaching, advanced commercial discussions (HoT not required). EIB has flexibility on offtake at venture debt stage that it does not have at senior debt stage.<br>
+        <strong>Deal-killers:</strong> binary technology risk unresolved, no equity anchor, team has not made the tech-to-project-developer transition.<br>
+        <strong>Real terms:</strong> 9–18 months from first contact to commitment. Working capital guarantee tranches have disbursed later than the debt itself — do not rely on them for construction cashflow planning.<br>
+        <strong>What their commitment signals:</strong> EU institutional validation — unlocks national DFI co-investment and ECA engagement.
+      </div>
+      <div class="prov-tags">
+        <span class="ptag">S3</span><span class="ptag">B/C/D archetypes</span><span class="ptag">Absorbs T=MED</span><span class="ptag">Sub debt</span><span class="ptag">Innovation Fund guarantee</span>
+      </div>
+    </div>
+    <div class="prov-card">
+      <div class="prov-top">
+        <span class="prov-name">National DFI equity (Tesi · Norfund · CDP · KfW · BBB)</span>
+        <span class="prov-type">Development finance equity</span>
+      </div>
+      <div class="prov-body">
+        <strong>Stated:</strong> additionality, climate impact, viable business model.<br>
+        <strong>Revealed:</strong> contracted demand is the deciding variable — not technology novelty. Requires board seat at A and C archetypes. Return target typically 8–12% IRR with longer horizon than VC. Most predictive survival instrument for Manufacturing Factory (C).<br>
+        <strong>Deal-killers:</strong> single-customer concentration (primary documented failure mode), no private co-investor willing to lead, management team has not transitioned to project developer identity.<br>
+        <strong>Note (Finland-specific):</strong> Finnish Climate Fund wound down into Tesi Group on 31 May 2025. Concessional subordinated loan capital previously accessible via Finnish Climate Fund now only deployable via Ministry of Economic Affairs and Employment request through Teollisuustuki Oy.<br>
+        <strong>What their commitment signals:</strong> government-backed commercial validation — crowds in commercial bank debt and infrastructure equity.
+      </div>
+      <div class="prov-tags">
+        <span class="ptag">S2–S3</span><span class="ptag">A/C primary</span><span class="ptag">Board seat required</span><span class="ptag">Demand-driven</span><span class="ptag">Crowd-in trigger</span>
+      </div>
+    </div>
+    <div class="prov-card">
+      <div class="prov-top">
+        <span class="prov-name">ECA-backed senior debt (Finnvera · EKF · Euler Hermes · UKEF · Atradius)</span>
+        <span class="prov-type">Senior guaranteed debt</span>
+      </div>
+      <div class="prov-body">
+        <strong>Stated:</strong> proven technology, bankable project structure, experienced EPC contractor, adequate equity cushion.<br>
+        <strong>Revealed:</strong> independent technical assessor confirming binary risk off the table is the actual technology gate — not operating hours. Most cost-effective bankability lever in Northern Europe. Converts project-level credit risk to near-sovereign credit quality.<br>
+        <strong>Requires:</strong> FEED complete, T resolved via ITA, EPC model selected and contractor engaged, offtake at advanced HoT, site and all permits confirmed, equity cushion ≥20–30% of total project cost.<br>
+        <strong>Deal-killers:</strong> binary technology risk, no offtake of any form, no site or permit certainty, equity cushion below threshold.<br>
+        <strong>What their commitment signals:</strong> commercial banks will participate alongside or behind ECA cover — the single most powerful crowd-in mechanism for senior debt.
+      </div>
+      <div class="prov-tags">
+        <span class="ptag">S3</span><span class="ptag">B/C/D archetypes</span><span class="ptag">Absorbs construction risk</span><span class="ptag">80–95% cover</span><span class="ptag">FEED required</span>
+      </div>
+    </div>
+    <div class="prov-card">
+      <div class="prov-top">
+        <span class="prov-name">Strategic / offtaker equity (industrial partner · offtaker stake)</span>
+        <span class="prov-type">Strategic equity</span>
+      </div>
+      <div class="prov-body">
+        <strong>Stated:</strong> strategic fit, supply security, decarbonisation commitment.<br>
+        <strong>Revealed:</strong> CVC arm and the operating business unit that would actually offtake are different decision units within the same corporate. Equity commitment from CVC does not automatically deliver the offtake commitment from the operating unit — alignment must be made explicit in the deal structure.<br>
+        <strong>Cases where it worked:</strong> Stegra (shareholders as offtakers), LanzaJet (offtaker equity with committed volume), Kassø (anchor offtaker with equity stake).<br>
+        <strong>What their commitment signals:</strong> commercial validation from an entity with skin in the game — the most consistent crowd-in mechanism at every archetype tier.
+      </div>
+      <div class="prov-tags">
+        <span class="ptag">S2–S4</span><span class="ptag">All archetypes</span><span class="ptag">Most consistent crowd-in</span><span class="ptag">CVC ≠ OpCo alignment</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:14px 16px;background:#f0f7f9;border:1px solid #C8D8DC;border-radius:10px;font-size:13px;color:#185568;line-height:1.7">
+    <strong style="color:#004357">This tool is a research prototype.</strong> All provider profiles will be updated as primary interview evidence is collected and validated. Data tagged [claimed] reflects single-source accounts. Data tagged [corroborated] reflects independent confirmation from at least two sources. When in doubt, approach providers directly and use this as a preparation guide, not a definitive reference.
+  </div>
+</div>
+
+<div class="tool-footer">
+  <span>FOAK Financing Playbook for Climate Founders · TAH Foundation · EU ACE LIFE Programme 101104612 · Co-funded by the European Union</span>
+  <span>Research prototype · <a href="https://www.tah.fi" target="_blank">tah.fi</a></span>
+</div>
+
+<script>
+const steps=document.querySelectorAll('.step-btn');
+const panels=document.querySelectorAll('.panel');
+
+function goTo(n){
+  steps.forEach((s,i)=>{
+    s.classList.toggle('active',i===n);
+    s.setAttribute('aria-selected',i===n);
+    if(i<n)s.classList.add('done'); else s.classList.remove('done');
+  });
+  panels.forEach((p,i)=>p.classList.toggle('active',i===n));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const archData={
+  A:{
+    text:`<strong>Distributed Assets (A)</strong> — each unit is a separate financing event. You prove unit economics at FOAK unit 1, then replicate. Capital stack logic: unit 1 is venture + catalytic capital. Units 2–5 unlock portfolio debt as operating data accumulates. NOAK does not need a new FOAK capital raise — it needs a portfolio financing vehicle.<br><br>Key implication: the FOAK financing problem is smaller in absolute terms but it repeats. DFI equity per unit and leasing structures at scale are the most relevant instruments. Single-customer concentration is the documented failure mode — diversify your buyer base before seeking portfolio finance.`
+  },
+  B:{
+    text:`<strong>Process Facility (B)</strong> — the facility IS the business. One FID, one capital raise, one shot. The entire capital stack must be assembled before construction starts. The most complex sequencing problem in the FOAK universe.<br><br>Most relevant instruments: catalytic grant (covers cost gap), EIB venture debt, ECA-backed senior debt, offtaker equity. Grant-as-anchor is common when P is HIGH — the grant load-bears the cost differential rather than enabling private capital. If your grant is &gt;50% of total equity raised, your business model depends on continued grant availability. Confirmed: Solar Foods Factory 01.`
+  },
+  C:{
+    text:`<strong>Manufacturing Factory (C)</strong> — products sold competitively into a market with multiple buyers. Capital stack must be justified by demand from multiple buyers, not a single offtake. This is structurally different from Process Facility financing.<br><br>National DFI equity with board seat is the most predictive survival instrument for this archetype. Single-customer concentration is the primary documented failure mode. The business model transition from lab-to-product-to-manufacturer is the hardest organisational challenge — most failures at this archetype are execution failures, not technology failures.`
+  },
+  D:{
+    text:`<strong>Gigafactory / Ecosystem (D)</strong> — structurally indivisible at &gt;€1B. Requires a pre-FID coalition of equity partners before any single partner will commit. Only cases with a single dominant demand absorber have reached financial close. Multi-stakeholder coalitions without one show a structural failure pattern.<br><br>Do not start capital raising without identifying your anchor demand partner first. The financing problem at D is not capital availability — it is coalition formation and governance. Government involvement as demand anchor (procurement, CfD, mandatory content) is typically required before private equity will commit at the required scale.`
+  }
+};
+
+function selectArch(el,code){
+  document.querySelectorAll('.arch-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const info=document.getElementById('arch-info');
+  info.innerHTML=archData[code].text;
+  info.classList.add('visible');
+}
+
+const dims=['T','P','F','M','I'];
+const dimNames=['Technology','Price vs alt','Feedstock','Market demand','Infrastructure'];
+const levels=['LOW','MED','HIGH','VH'];
+const ratings={};
+
+const rg=document.getElementById('risk-grid');
+dims.forEach((d,di)=>{
+  const col=document.createElement('div');
+  col.className='risk-col';
+  col.innerHTML=`<div class="risk-col-hdr"><div class="risk-code">${d}</div><div class="risk-name">${dimNames[di]}</div></div><div class="risk-btns" id="rb-${d}"></div>`;
+  rg.appendChild(col);
+  const rb=document.getElementById(`rb-${d}`);
+  levels.forEach(lv=>{
+    const btn=document.createElement('button');
+    btn.className='risk-btn';
+    btn.textContent=lv;
+    btn.onclick=()=>{
+      document.querySelectorAll(`#rb-${d} .risk-btn`).forEach(b=>b.className='risk-btn');
+      btn.className=`risk-btn sel-${lv}`;
+      ratings[d]=lv;
+      updateRisk();
+    };
+    rb.appendChild(btn);
+  });
+});
+
+function updateRisk(){
+  const gw=document.getElementById('gate-warn');
+  const rr=document.getElementById('risk-result');
+  if(ratings.M==='VH'&&ratings.I==='VH'){
+    gw.style.display='block';
+    rr.style.display='none';
+    return;
+  }
+  gw.style.display='none';
+  const keys=Object.keys(ratings);
+  if(!keys.length){rr.style.display='none';return;}
+  const blocking=keys.filter(k=>ratings[k]==='HIGH'||ratings[k]==='VH');
+  let h=`<div style="margin-bottom:8px"><span style="font-size:12px;font-weight:600;color:#374151">Current profile: </span>`;
+  keys.forEach(k=>{
+    const v=ratings[k];
+    h+=`<span class="badge badge-${v}">${k}=${v}</span>`;
+  });
+  h+=`</div>`;
+  if(blocking.length){
+    h+=`<div style="font-size:13px;color:#374151"><strong style="color:#111">Blocking dimensions: ${blocking.join(', ')}</strong> — these must be resolved before the corresponding capital pools can enter. Each HIGH or VH dimension blocks a specific set of providers regardless of how strong every other dimension is. Go to step 3 to see what resolves each one.</div>`;
+  } else if(keys.length===5){
+    h+=`<div style="font-size:13px;color:#1A6A50"><strong>No blocking dimensions identified.</strong> Full capital stack access is in principle available — sequencing and execution readiness now determine timing. Proceed to step 4.</div>`;
+  } else {
+    h+=`<div style="font-size:12px;color:#6b7280">Rate all five dimensions to see your full blocking analysis.</div>`;
+  }
+  rr.innerHTML=h;
+  rr.style.display='block';
+}
+</script>
+</body>
+</html>
